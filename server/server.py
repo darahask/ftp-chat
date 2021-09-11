@@ -1,11 +1,12 @@
 import os
 import socket
 import threading
+import base64
 
 IP_ADD = "0.0.0.0"
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 1024
+SIZE = 1024*4
 FORMAT = "utf-8"
 clients = {}
 # SERVER_DATA_PATH = "server_data"
@@ -20,13 +21,17 @@ def handle_transfer(con, add):
         info = info.split("@")
         action = info[0]
 
-        if action == "LIST":
+        if action == "list":
             ppl = "OK@Active Users: \n"
 
             for k, v in clients:
                 ppl += f"{k}: {v}\n"
 
             con.send(ppl.encode(FORMAT))
+
+        if action == "upload":
+            ip_addr = info[1]
+            socket.sendto("recieve@"+info[2],ip_addr)
 
 
 def start_server():

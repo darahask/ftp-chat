@@ -1,37 +1,41 @@
-import os
 import socket
 import threading
-import base64
+import pickle
 
 IP_ADD = "0.0.0.0"
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 1024*4
-FORMAT = "utf-8"
+SIZE = 2048
 clients = {}
-# SERVER_DATA_PATH = "server_data"
 
 
-def handle_transfer(con, add):
+def constructdata(type, ip, port, data):
+    dict = {"command": type, "ip": ip, "port": "", "data": data}
+    return dict
+
+
+def handle_transfer(con, add, socket):
     print(f"Client at {add} is connected")
-    con.send("OK@Welcome to File Sharing Platform!!!".encode(FORMAT))
+
+    con.send(pickle.dumps(constructdata("msg", "", "", "Welcome to file transfer !!!")))
 
     while True:
-        info = con.recv(SIZE).decode(FORMAT)
-        info = info.split("@")
-        action = info[0]
+        info = pickle.loads(con.recv(SIZE))
+        action = info["command"]
 
         if action == "list":
-            ppl = "OK@Active Users: \n"
+            ppl = "Active Users: \n"
 
             for k, v in clients:
                 ppl += f"{k}: {v}\n"
 
-            con.send(ppl.encode(FORMAT))
+            con.send(pickle.dumps(constructdata("msg", "", "", ppl)))
 
         if action == "upload":
-            ip_addr = info[1]
-            socket.sendto("recieve@"+info[2],ip_addr)
+            socket.sendto(
+                pickle.dumps(constructdata("recieve", "", "", info["data"])),
+                (info["ip"], int(info["port"])),
+            )
 
 
 def start_server():
@@ -43,7 +47,7 @@ def start_server():
     while True:
         con, add = tserver.accept()
         clients[add] = 1
-        thread = threading.Thread(target=handle_transfer, args=(con, add))
+        thread = threading.Thread(target=handle_transfer, args=(con, add, tserver))
         thread.start()
 
 

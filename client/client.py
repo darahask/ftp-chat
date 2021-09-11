@@ -1,13 +1,18 @@
 import socket
 import base64
+import pickle
 
 data = input("Enter the server adress: ")
 
 IP_ADD = data
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 1024*4
-FORMAT = "utf-8"
+SIZE = 2048
+
+
+def constructdata(type, ip, data):
+    dict = {"command": type, "ip": ip, "port": "", data: data}
+    return dict
 
 
 def main():
@@ -15,36 +20,38 @@ def main():
     client.connect(ADD_T)
 
     while True:
-        data = client.recv(SIZE).decode(FORMAT)
-        cmd, msg = data.split("@")
+        data = pickle.loads(client.recv(SIZE))
+        cmd = data["command"]
 
-        if cmd == "DISCONNECTED":
-            print("DISCONNECTED")
-        elif cmd == "OK":
-            print(msg)
-
-        data = input("> ")
-        data = data.split(" ")
-        cmd = data[0]
+        if cmd == "msg":
+            print(data["data"])
+            cmd = input("> ")
 
         if cmd == "list":
-            client.send(cmd.encode(FORMAT))
+            dict = {"command": "list", "ip": "", "port": "", "data": ""}
+            client.send(pickle.dumps(dict))
 
         if cmd == "upload":
-            reciever = input("Enter Client IP> ")
+            reciever = input("Enter Client IP > ")
+            port = input("Enter Client Port > ")
             file_path = input("Enter file path > ")
-            with open(file_path,'r') as f:
-                data_stream = f.read(1024)
-                temp = ("upload@"+reciever+"@")
-                client.send((temp+base64.b64encode(data_stream)).encode(FORMAT))
-                while data_stream:
-                    data_stream = f.read(1024)
-                    client.send((temp+base64.b64encode(data_stream)).encode(FORMAT))
+            with open(file_path, "r") as f:
+                data_stream = f.read()
+                dict = {
+                    "command": "upload",
+                    "ip": reciever,
+                    "port": port,
+                    "data": data_stream.encode("utf-8"),
+                }
+                client.send(pickle.dumps(dict))
+                # while data_stream:
+                #     data_stream = f.read(1024)
+                #     client.send((temp+base64.b64encode(data_stream)).encode(FORMAT))
 
         if cmd == "recieve":
-            with open("experiment.jpg",'a') as f:
-                f.write(base64.b64decode(msg))
-
+            # with open("experiment.", "a") as f:
+            print(data["data"])
+            # f.write(base64.b64decode(msg))
 
     print("Disconnected from the server.")
     client.close()

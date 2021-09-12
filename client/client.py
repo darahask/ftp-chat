@@ -25,7 +25,8 @@ def main():
 
         if cmd == "msg":
             print(data["data"])
-            cmd = input("> ")
+
+        cmd = input("> ")
 
         if cmd == "list":
             dict = {"command": "list", "ip": "", "port": "", "data": ""}

@@ -14,6 +14,11 @@ def constructdata(type, ip, port, data):
     return dict
 
 
+def sendto(data, address):
+    sendcon = clients[address]
+    sendcon.send(data)
+
+
 def handle_transfer(con, add, socket):
     print(f"Client at {add} is connected")
 
@@ -32,7 +37,7 @@ def handle_transfer(con, add, socket):
             con.send(pickle.dumps(constructdata("msg", "", "", ppl)))
 
         if action == "upload":
-            socket.sendto(
+            sendto(
                 pickle.dumps(constructdata("recieve", "", "", info["data"])),
                 (info["ip"], int(info["port"])),
             )
@@ -46,7 +51,7 @@ def start_server():
 
     while True:
         con, add = tserver.accept()
-        clients[add] = 1
+        clients[add] = con
         thread = threading.Thread(target=handle_transfer, args=(con, add, tserver))
         thread.start()
 

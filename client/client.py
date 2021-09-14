@@ -1,5 +1,4 @@
 import socket
-import base64
 import pickle
 
 data = input("Enter the server adress: ")
@@ -22,6 +21,7 @@ def main():
     while True:
         data = pickle.loads(client.recv(SIZE))
         cmd = data["command"]
+        print(data)
 
         if cmd == "msg":
             print(data["data"])
@@ -31,7 +31,6 @@ def main():
         if cmd == "list":
             dict = {"command": "list", "ip": "", "port": "", "data": ""}
             client.send(pickle.dumps(dict))
-
         if cmd == "upload":
             reciever = input("Enter Client IP > ")
             port = input("Enter Client Port > ")
@@ -48,7 +47,6 @@ def main():
                 # while data_stream:
                 #     data_stream = f.read(1024)
                 #     client.send((temp+base64.b64encode(data_stream)).encode(FORMAT))
-
         if cmd == "recieve":
             # with open("experiment.", "a") as f:
             print(data["data"])

@@ -6,7 +6,7 @@ data = input("Enter the server adress: ")
 IP_ADD = data
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 1024
+SIZE = 3072
 
 
 def constructdata(type, ip, data):
@@ -44,12 +44,12 @@ def main():
                         "command": "upload",
                         "ip": reciever,
                         "port": port,
-                        "data": data_stream.encode("utf-8"),
+                        "data": data_stream,
                     }
                     client.send(pickle.dumps(dict))
         if cmd == "recieve":
             with open("ex.txt", "a") as f:
-                f.write(data["data"].decode("utf-8"))
+                f.write(data["data"])
 
     print("Disconnected from the server.")
     client.close()

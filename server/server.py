@@ -1,11 +1,12 @@
 import socket
 import threading
 import pickle
+import time
 
 IP_ADD = "0.0.0.0"
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 3072
+SIZE = 2048
 clients = {}
 
 
@@ -42,17 +43,29 @@ def handle_transfer(con, add, socket):
                 (info["ip"], int(info["port"])),
             )
 
+        if action == "done":
+            sendto(
+                pickle.dumps(constructdata("done", "", "", "")),
+                (info["ip"], int(info["port"])),
+            )
+            time.sleep(0.001)
+            sendto(
+                pickle.dumps(constructdata("msg", "", "", "file transfer done")),
+                (info["ip"], int(info["port"])),
+            )
+            con.send(pickle.dumps(constructdata("msg", "", "", "file sent")))
+
 
 def start_server():
     tserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tserver.bind(ADD_T)
     tserver.listen()
-    print(f"Server started on {IP_ADD}:{PORT}.")
+    print(f"Server started")
 
     while True:
         con, add = tserver.accept()
         clients[add] = con
-        thread = threading.Thread(target=handle_transfer, args=(con, add, tserver))
+        thread = threading.Thread(target=handle_transfer, args=(con, add))
         thread.start()
 
 

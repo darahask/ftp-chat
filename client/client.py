@@ -1,12 +1,13 @@
 import socket
 import pickle
+import time
 
 data = input("Enter the server adress: ")
 
 IP_ADD = data
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 3072
+SIZE = 2048
 
 
 def constructdata(type, ip, data):
@@ -32,12 +33,12 @@ def main():
             dict = {"command": "list", "ip": "", "port": "", "data": ""}
             client.send(pickle.dumps(dict))
         if cmd == "upload":
-            reciever = input("Enter Client IP > ")
+            reciever = "127.0.0.1"  # input("Enter Client IP > ")
             port = input("Enter Client Port > ")
             file_path = input("Enter file path > ")
             with open(file_path, "r") as f:
                 while True:
-                    data_stream = f.read(SIZE)
+                    data_stream = f.read(1024)
                     if not data_stream:
                         break
                     dict = {
@@ -47,9 +48,24 @@ def main():
                         "data": data_stream,
                     }
                     client.send(pickle.dumps(dict))
+                    time.sleep(0.001)
+                dict = {
+                    "command": "done",
+                    "ip": reciever,
+                    "port": port,
+                    "data": "",
+                }
+                client.send(pickle.dumps(dict))
+
         if cmd == "recieve":
             with open("ex.txt", "a") as f:
-                f.write(data["data"])
+                while True:
+                    data = pickle.loads(client.recv(SIZE))
+                    if data["command"] == "done":
+                        break
+                    f.write(data["data"])
+        if cmd == "stop":
+            break
 
     print("Disconnected from the server.")
     client.close()

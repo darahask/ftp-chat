@@ -5,12 +5,12 @@ import pickle
 IP_ADD = "0.0.0.0"
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 2048
+SIZE = 3072
 clients = {}
 
 
 def constructdata(type, ip, port, data):
-    dict = {"command": type, "ip": ip, "port": "", "data": data}
+    dict = {"command": type, "ip": ip, "port": port, "data": data}
     return dict
 
 

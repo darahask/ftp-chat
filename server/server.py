@@ -21,7 +21,6 @@ def constructdata(type, ip, port, data):
 
 # forwards data to a client at an address
 def sendto(data, address):
-    print(address)
     sendcon = clients[address]
     sendcon.send(data)
 
@@ -74,7 +73,7 @@ def handle_transfer(con, add):
                                 pickle.dumps(constructdata("", "", "", "")),
                                 (ip, int(port)),
                             )
-                            time.sleep(0.001)
+                            time.sleep(1)
 
                             # notifyting sender and receiver that the file transfer is complete
                             # here con is instance of sender client, receiver clients instance is
@@ -98,6 +97,7 @@ def handle_transfer(con, add):
                         )
     except:
         # client is disconnected
+        clients.pop(add)
         print(f"Client at {add} is disconnected")
 
 

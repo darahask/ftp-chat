@@ -1,11 +1,12 @@
 import socket
 import threading
 import pickle
+import time
 
 IP_ADD = "0.0.0.0"
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 3072
+SIZE = 2048
 clients = {}
 
 
@@ -19,7 +20,7 @@ def sendto(data, address):
     sendcon.send(data)
 
 
-def handle_transfer(con, add, socket):
+def handle_transfer(con, add):
     print(f"Client at {add} is connected")
 
     con.send(pickle.dumps(constructdata("msg", "", "", "Welcome to file transfer !!!")))
@@ -37,22 +38,52 @@ def handle_transfer(con, add, socket):
             con.send(pickle.dumps(constructdata("msg", "", "", ppl)))
 
         if action == "upload":
+            ip = info["ip"]
+            port = info["port"]
+            filename = info["data"]
             sendto(
-                pickle.dumps(constructdata("recieve", "", "", info["data"])),
-                (info["ip"], int(info["port"])),
+                pickle.dumps(constructdata("", "", "", filename)),
+                (ip, int(port)),
             )
+            con.send("OK".encode("utf-8"))
+
+            while True:
+                co = con.recv(SIZE)
+                try:
+                    x = pickle.loads(co)
+                    if x["command"] == "done":
+                        sendto(
+                            None,
+                            (ip, int(port)),
+                        )
+                        time.sleep(0.001)
+                        sendto(
+                            pickle.dumps(
+                                constructdata("msg", "", "", "file transfer done")
+                            ),
+                            (ip, int(port)),
+                        )
+                        con.send(
+                            pickle.dumps(constructdata("msg", "", "", "file sent"))
+                        )
+                        break
+                except:
+                    sendto(
+                        co,
+                        (info["ip"], int(info["port"])),
+                    )
 
 
 def start_server():
     tserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tserver.bind(ADD_T)
     tserver.listen()
-    print(f"Server started on {IP_ADD}:{PORT}.")
+    print(f"Server started")
 
     while True:
         con, add = tserver.accept()
         clients[add] = con
-        thread = threading.Thread(target=handle_transfer, args=(con, add, tserver))
+        thread = threading.Thread(target=handle_transfer, args=(con, add))
         thread.start()
 
 

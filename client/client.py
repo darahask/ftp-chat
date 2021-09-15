@@ -1,16 +1,17 @@
 import socket
 import pickle
+import time
 
 data = input("Enter the server adress: ")
 
 IP_ADD = data
 PORT = 2222
 ADD_T = (IP_ADD, PORT)
-SIZE = 3072
+SIZE = 2048
 
 
-def constructdata(type, ip, data):
-    dict = {"command": type, "ip": ip, "port": "", data: data}
+def constructdata(type, ip, port, data):
+    dict = {"command": type, "ip": ip, "port": port, "data": data}
     return dict
 
 
@@ -35,21 +36,37 @@ def main():
             reciever = input("Enter Client IP > ")
             port = input("Enter Client Port > ")
             file_path = input("Enter file path > ")
+
+            filename = file_path.split("/")[-1]
+
+            client.send(pickle.dumps(constructdata("upload", reciever, port, filename)))
+            client.recv(SIZE)
+
             with open(file_path, "r") as f:
                 while True:
                     data_stream = f.read(SIZE)
                     if not data_stream:
                         break
-                    dict = {
-                        "command": "upload",
-                        "ip": reciever,
-                        "port": port,
-                        "data": data_stream,
-                    }
-                    client.send(pickle.dumps(dict))
+                    client.send(data_stream.encode("utf-8"))
+                time.sleep(0.001)
+                dict = {
+                    "command": "done",
+                    "ip": reciever,
+                    "port": port,
+                    "data": "",
+                }
+                client.send(pickle.dumps(dict))
+
         if cmd == "recieve":
-            with open("ex.txt", "a") as f:
-                f.write(data["data"])
+            filename = pickle.loads(client.recv(SIZE))["data"]
+            with open(filename, "a") as f:
+                while True:
+                    data = client.recv(SIZE)
+                    if not data:
+                        break
+                    f.write(data.decode("utf-8"))
+        if cmd == "stop":
+            break
 
     print("Disconnected from the server.")
     client.close()

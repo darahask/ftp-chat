@@ -16,13 +16,13 @@ def constructdata(type, ip, port, data):
 
 
 def sendto(data, address):
+    print(address)
     sendcon = clients[address]
     sendcon.send(data)
 
 
 def handle_transfer(con, add):
     print(f"Client at {add} is connected")
-
     con.send(pickle.dumps(constructdata("msg", "", "", "Welcome to file transfer !!!")))
 
     while True:
@@ -41,19 +41,19 @@ def handle_transfer(con, add):
             ip = info["ip"]
             port = info["port"]
             filename = info["data"]
-            sendto(
-                pickle.dumps(constructdata("", "", "", filename)),
-                (ip, int(port)),
-            )
+            print(filename)
+            sendto(pickle.dumps(constructdata("", "", "", filename)), (ip, int(port)))
             con.send("OK".encode("utf-8"))
-
+            print(2)
             while True:
                 co = con.recv(SIZE)
                 try:
                     x = pickle.loads(co)
+                    print(5)
                     if x["command"] == "done":
+                        print(6)
                         sendto(
-                            None,
+                            pickle.dumps(constructdata("", "", "", "")),
                             (ip, int(port)),
                         )
                         time.sleep(0.001)
@@ -68,6 +68,7 @@ def handle_transfer(con, add):
                         )
                         break
                 except:
+                    print(4)
                     sendto(
                         co,
                         (info["ip"], int(info["port"])),

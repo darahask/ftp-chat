@@ -40,8 +40,9 @@ def main():
             filename = file_path.split("/")[-1]
 
             client.send(pickle.dumps(constructdata("upload", reciever, port, filename)))
+            print("1")
             client.recv(SIZE)
-
+            print("3")
             with open(file_path, "r") as f:
                 while True:
                     data_stream = f.read(SIZE)
@@ -62,9 +63,11 @@ def main():
             with open(filename, "a") as f:
                 while True:
                     data = client.recv(SIZE)
-                    if not data:
+                    try:
+                        x = data.decode("utf-8")
+                        f.write(x)
+                    except:
                         break
-                    f.write(data.decode("utf-8"))
         if cmd == "stop":
             break
 

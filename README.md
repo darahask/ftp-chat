@@ -25,8 +25,10 @@ This contains the server sided funtionalitites. It is the point of contact for a
 ### Running the client
 ```bash
 > python3 client/client.py
-> Enter the socket IP address: (server IP address expected which can be found ifconfig in linux)
+> Enter the socket IP address: (server IP address expected which can be found ifconfig/ipconfig in linux and windows respectively)
 ```
+- Running of clients in different computers connected to same router is preffered, if clients are run on same computer, they should run in different folders.
+
 Commands available for clients: `list`, `upload`, `receive`, `stop`.
 
 Detailed description is available [here](CN%20lab1%20Report.pdf)
